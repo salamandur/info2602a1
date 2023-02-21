@@ -8,6 +8,7 @@ from App import app
 def initialize():
   db.drop_all()
   db.create_all()
+  file = open("pokemon.csv")
   print('database initialized')
 
   
