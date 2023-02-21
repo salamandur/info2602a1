@@ -8,7 +8,23 @@ from App import app
 def initialize():
   db.drop_all()
   db.create_all()
-  file = open("pokemon.csv")
+  with open('pokemon.csv') as file:
+    reader = csv.DictReader(file)
+    for row in reader:
+      new_pokemon = Pokemon()
+      new_pokemon.id = int(row['id'])
+      new_pokemon.name = str(row['name'])
+      new_pokemon.attack = int(row['attack'])
+      new_pokemon.defense = int(row['defense'])
+      new_pokemon.hp = int(row['hp'])
+      new_pokemon.height = int(row['height'])
+      new_pokemon.sp_attack = int(row['sp_attack'])
+      new_pokemon.sp_defense = int(row['sp_defense'])
+      new_pokemon.speed = int(row['speed'])
+      new_pokemon.type1 = str(row['type1'])
+      new_pokemon.type2 = str(row['type2'])
+      db.session.add(new_Pokemon)
+    db.session.commit()
   print('database initialized')
 
   
