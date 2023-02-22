@@ -21,6 +21,11 @@ class User(db.Model):
   # pokemons = db.relationship('UserPokemon', backref='pokemon', lazy=True, cascade='all, delete-orphan')
   pass
 
+  def __init__(self, username, email, password):
+    self.username = username
+    self.email = email
+    self.__set_password__(password)
+
   def __catch_pokemon__(pokemon_id, name):
     return
 
@@ -30,7 +35,7 @@ class User(db.Model):
   def __rename_pokemon__(pokemon_id, name):
     return
 
-  def __set_password__(password):
+  def __set_password__(self, password):
     self.password = generate_password_hash(password)
 
   def __check_password__(password):

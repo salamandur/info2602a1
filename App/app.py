@@ -27,7 +27,7 @@ jwt = JWTManager(app)  #setup flask jwt-e to work with app
 
 @app.route('/')
 def index():
-  return '<h1>Poke API</h1>'
+  return '<h1>Poke API v1.0</h1>'
 
 @app.route('/pokemon', methods=['GET'])
 def listPokemon():
@@ -36,6 +36,21 @@ def listPokemon():
     return [pokemon.get_json() for pokemon in pokemons]
   else:
     return []
+
+@app.route('/signup', methods=['POST'])
+def signUpUser():
+  data = request.json
+  new_user = User(data['username'], data['email'], data['password'])
+
+  user_username = User.query.filter_by(username=data['username']).first()
+  user_email = User.query.filter_by(email=data['email']).first()
+  
+  if user_username or user_email:
+    return jsonify(error=f'username or email already exists'), 400
+  
+  db.session.add(new_user)
+  db.session.commit()
+  return jsonify(message=f'{new_user.username} created'), 201
 
 if __name__ == "__main__":
   app.run(host='0.0.0.0', port=81)
