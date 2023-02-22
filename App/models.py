@@ -4,17 +4,17 @@ db = SQLAlchemy()
 
 class UserPokemon(db.Model):
   id = db.Column(db.Integer, primary_key=True)
-  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique = True, nullable = False)
-  pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id'), unique = True, nullable = False)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), unique = True, nullable = False)
+  pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.pokemon_id'), unique = True, nullable = False)
   name = db.Column(db.String(50), nullable = False)
   pass
 
-  def __get_json__():
-    return {"user_id": self.user_id, "pokemon_id": self.pokemon_id, "name": self.name}
+  def get_json():
+    return {"id": self.id, "pokemon_id": self.pokemon_id, "name": self.name}
 
 
 class User(db.Model):
-  id = db.Column(db.Integer, primary_key=True)
+  user_id = db.Column(db.Integer, primary_key=True)
   username = db.Column(db.String(80), unique = True, nullable = False)
   email = db.Column(db.String(120), unique = True, nullable = False)
   password = db.Column(db.String(120), unique = True, nullable = False)
@@ -40,12 +40,12 @@ class User(db.Model):
 
     
 class Pokemon(db.Model):
-  id = db.Column(db.Integer, primary_key=True)
+  pokemon_id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String(30), nullable = False)
   attack = db.Column(db.Integer, nullable = False)
   defense = db.Column(db.Integer, nullable = False)
   hp = db.Column(db.Integer, nullable = False)
-  height = db.Column(db.Integer, nullable = False)
+  height = db.Column(db.Integer, nullable = True)
   sp_attack = db.Column(db.Integer, nullable = False)
   sp_defense = db.Column(db.Integer, nullable = False)
   speed = db.Column(db.Integer, nullable = False)
@@ -54,8 +54,8 @@ class Pokemon(db.Model):
   # users = db.relationship('UserPokemon', backref='user', lazy=True, cascade='all, delete-orphan')
   pass
 
-  def __get_json__():
-    return {"name": self.name, "attack": self.attack, "defense": self.defense, "hp": self.hp, 
+  def get_json(self):
+    return {"pokemon_id": self.pokemon_id, "name": self.name, "attack": self.attack, "defense": self.defense, "hp": self.hp, 
             "height": self.height, "sp_attack": self.sp_attack, "sp_defense": self.sp_defense,
             "speed": self.speed, "type1": self.type1, "type2": self.type2}
     # return db.session.execute(db.select(Pokemon))

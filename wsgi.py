@@ -17,7 +17,8 @@ def initialize():
       new_pokemon.attack = int(row['attack'])
       new_pokemon.defense = int(row['defense'])
       new_pokemon.hp = int(row['hp'])
-      new_pokemon.height = int(row['height_m'])
+      if not row['height_m'] == "":
+        new_pokemon.height = int(float(row['height_m']))
       new_pokemon.sp_attack = int(row['sp_attack'])
       new_pokemon.sp_defense = int(row['sp_defense'])
       new_pokemon.speed = int(row['speed'])

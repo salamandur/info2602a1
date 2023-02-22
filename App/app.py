@@ -29,5 +29,13 @@ jwt = JWTManager(app)  #setup flask jwt-e to work with app
 def index():
   return '<h1>Poke API</h1>'
 
+@app.route('/pokemon', methods=['GET'])
+def listPokemon():
+  pokemons = Pokemon.query.all()
+  if pokemons:
+    return [pokemon.get_json() for pokemon in pokemons]
+  else:
+    return []
+
 if __name__ == "__main__":
   app.run(host='0.0.0.0', port=81)
