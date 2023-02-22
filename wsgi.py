@@ -8,7 +8,6 @@ from App import app
 def initialize():
   db.drop_all()
   db.create_all()
-  # new_pokemon = Pokemon("name 1", 1, 2, 3, 4, 5, 6, 7, "type 1", "type 2")
   with open('pokemon.csv') as file:
     reader = csv.DictReader(file)
     for row in reader:
@@ -25,8 +24,6 @@ def initialize():
       new_pokemon.type1 = str(row['type1'])
       new_pokemon.type2 = str(row['type2'])
       db.session.add(new_pokemon)
-  #   db.session.commit()
-  # db.session.add(new_pokemon)
   print('database initialized')
 
   
