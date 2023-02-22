@@ -4,8 +4,8 @@ db = SQLAlchemy()
 
 class UserPokemon(db.Model):
   id = db.Column(db.Integer, primary_key=True)
-  user_id = db.Column(db.Integer, db.ForeignKey('User.id'), unique = True, nullable = False)
-  pokemon_id = db.Column(db.Integer, db.ForeignKey('Pokemon.id'), unique = True, nullable = False)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique = True, nullable = False)
+  pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.id'), unique = True, nullable = False)
   name = db.Column(db.String(50), nullable = False)
   pass
 
@@ -18,7 +18,7 @@ class User(db.Model):
   username = db.Column(db.String(80), unique = True, nullable = False)
   email = db.Column(db.String(120), unique = True, nullable = False)
   password = db.Column(db.String(120), unique = True, nullable = False)
-  # pokemons = db.relationship('UserPokemon', backref='Pokemon', lazy=True, cascade='all, delete-orphan')
+  # pokemons = db.relationship('UserPokemon', backref='pokemon', lazy=True, cascade='all, delete-orphan')
   pass
 
   def __catch_pokemon__(pokemon_id, name):
@@ -51,7 +51,7 @@ class Pokemon(db.Model):
   speed = db.Column(db.Integer, nullable = False)
   type1 = db.Column(db.String(50), nullable = False)
   type2 = db.Column(db.String(50), nullable = False, default = "None")
-  # users = db.relationship('UserPokemon', backref='User', lazy=True, cascade='all, delete-orphan')
+  # users = db.relationship('UserPokemon', backref='user', lazy=True, cascade='all, delete-orphan')
   pass
 
   def __get_json__():
@@ -59,3 +59,4 @@ class Pokemon(db.Model):
             "height": self.height, "sp_attack": self.sp_attack, "sp_defense": self.sp_defense,
             "speed": self.speed, "type1": self.type1, "type2": self.type2}
     # return db.session.execute(db.select(Pokemon))
+
