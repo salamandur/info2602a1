@@ -12,7 +12,7 @@ def initialize():
     reader = csv.DictReader(file)
     for row in reader:
       new_pokemon = Pokemon()
-      # new_pokemon.id = int(row['id'])
+      new_pokemon.id = int(row['pokedex_number'])
       new_pokemon.name = str(row['name'])
       new_pokemon.attack = int(row['attack'])
       new_pokemon.defense = int(row['defense'])
@@ -24,6 +24,7 @@ def initialize():
       new_pokemon.type1 = str(row['type1'])
       new_pokemon.type2 = str(row['type2'])
       db.session.add(new_pokemon)
+    db.session.commit()
   print('database initialized')
 
   
