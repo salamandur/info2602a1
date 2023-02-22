@@ -67,5 +67,8 @@ def loginUser():
       return jsonify(error='bad username/password given'), 401
   return jsonify(access_token=token)
 
+@app.route('/mypokemon', methods=['POST'])
+def saveUserPokemon():
+  data = request.json
 if __name__ == "__main__":
   app.run(host='0.0.0.0', port=81)

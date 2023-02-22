@@ -23,7 +23,10 @@ def initialize():
       new_pokemon.sp_defense = int(row['sp_defense'])
       new_pokemon.speed = int(row['speed'])
       new_pokemon.type1 = str(row['type1'])
-      new_pokemon.type2 = str(row['type2'])
+      if not row['type2'] == "":
+        new_pokemon.type2 = str(row['type2'])
+      if not row['weight_kg'] == "":
+        new_pokemon.weight = int(float(row['weight_kg']))
       db.session.add(new_pokemon)
     db.session.commit()
   print('database initialized')

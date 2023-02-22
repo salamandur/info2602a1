@@ -56,10 +56,11 @@ class Pokemon(db.Model):
   speed = db.Column(db.Integer, nullable = False)
   type1 = db.Column(db.String(50), nullable = False)
   type2 = db.Column(db.String(50), nullable = False, default = "None")
+  weight = db.Column(db.Integer, nullable = True)
   users = db.relationship('UserPokemon', backref='user', lazy=True, cascade='all, delete-orphan')
   pass
 
   def get_json(self):
     return {"pokemon_id": self.pokemon_id, "name": self.name, "attack": self.attack, "defense": self.defense, "hp": self.hp, 
             "height": self.height, "sp_attack": self.sp_attack, "sp_defense": self.sp_defense,
-            "speed": self.speed, "type1": self.type1, "type2": self.type2}
+            "speed": self.speed, "type1": self.type1, "type2": self.type2, "weight": self.weight}
