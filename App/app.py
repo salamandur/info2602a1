@@ -50,7 +50,22 @@ def signUpUser():
   
   db.session.add(new_user)
   db.session.commit()
+  return jsonify(message=f'{new_user.username} created', email=f'{new_user.email}', password=f'{new_user.password}'), 201
   return jsonify(message=f'{new_user.username} created'), 201
+
+def login(username, password):
+    user = User.query.filter_by(username=username).first()
+    if user and user.check_password(password):
+      return create_access_token(identity=username)
+    return None
+
+@app.route('/login', methods=['POST'])
+def loginUser():
+  data = request.json
+  token = login(data['username'], data['password'])
+  if not token:
+      return jsonify(error='bad username/password given'), 401
+  return jsonify(access_token=token)
 
 if __name__ == "__main__":
   app.run(host='0.0.0.0', port=81)

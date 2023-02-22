@@ -9,7 +9,7 @@ class UserPokemon(db.Model):
   name = db.Column(db.String(50), nullable = False)
   pass
 
-  def get_json():
+  def get_json(self):
     return {"id": self.id, "pokemon_id": self.pokemon_id, "name": self.name}
 
 
@@ -18,27 +18,27 @@ class User(db.Model):
   username = db.Column(db.String(80), unique = True, nullable = False)
   email = db.Column(db.String(120), unique = True, nullable = False)
   password = db.Column(db.String(120), unique = True, nullable = False)
-  # pokemons = db.relationship('UserPokemon', backref='pokemon', lazy=True, cascade='all, delete-orphan')
+  pokemons = db.relationship('UserPokemon', backref='pokemon', lazy=True, cascade='all, delete-orphan')
   pass
 
   def __init__(self, username, email, password):
     self.username = username
     self.email = email
-    self.__set_password__(password)
+    self.set_password(password)
 
-  def __catch_pokemon__(pokemon_id, name):
+  def catch_pokemon(pokemon_id, name):
     return
 
-  def __release_pokemon__(pokemon_id, name):
+  def release_pokemon(pokemon_id, name):
     return
 
-  def __rename_pokemon__(pokemon_id, name):
+  def rename_pokemon(pokemon_id, name):
     return
 
-  def __set_password__(self, password):
+  def set_password(self, password):
     self.password = generate_password_hash(password)
 
-  def __check_password__(password):
+  def check_password(self, password):
     if(generate_password_hash(self.password)==generate_password_hash(password)):
       return True
     return False
@@ -56,12 +56,10 @@ class Pokemon(db.Model):
   speed = db.Column(db.Integer, nullable = False)
   type1 = db.Column(db.String(50), nullable = False)
   type2 = db.Column(db.String(50), nullable = False, default = "None")
-  # users = db.relationship('UserPokemon', backref='user', lazy=True, cascade='all, delete-orphan')
+  users = db.relationship('UserPokemon', backref='user', lazy=True, cascade='all, delete-orphan')
   pass
 
   def get_json(self):
     return {"pokemon_id": self.pokemon_id, "name": self.name, "attack": self.attack, "defense": self.defense, "hp": self.hp, 
             "height": self.height, "sp_attack": self.sp_attack, "sp_defense": self.sp_defense,
             "speed": self.speed, "type1": self.type1, "type2": self.type2}
-    # return db.session.execute(db.select(Pokemon))
-
