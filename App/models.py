@@ -23,7 +23,7 @@ class User(db.Model):
   username = db.Column(db.String(80), unique = True, nullable = False)
   email = db.Column(db.String(120), unique = True, nullable = False)
   password = db.Column(db.String(120), unique = True, nullable = False)
-  pokemons = db.relationship('UserPokemon', backref='pokemon', lazy=True, cascade='all, delete-orphan')
+  # pokemons = db.relationship('UserPokemon', backref='pokemon', lazy=True, cascade='all, delete-orphan')
   pass
 
   def __init__(self, username, email, password):
@@ -32,13 +32,16 @@ class User(db.Model):
     self.set_password(password)
 
   def catch_pokemon(pokemon_id, name):
-    pokemon = Pokemon.query.filter_by(pokemon_id=data['pokemon_id']).first()
+    user_pokemon = Pokemon.query.filter_by(pokemon_id=pokemon_id).first()
 
   def release_pokemon(pokemon_id, name):
-    return
+    user_pokemon = UserPokemon.query.filter_by(pokemon_id=pokemon_id).first()
 
   def rename_pokemon(pokemon_id, name):
-    return
+    user_pokemon = UserPokemon.query.filter_by(pokemon_id=pokemon_id).first()
+    if user_pokemon:
+      user_pokemon.name = name
+    
 
   def set_password(self, password):
     self.password = generate_password_hash(password)
@@ -46,7 +49,8 @@ class User(db.Model):
   def check_password(self, password):
     if(self.password==generate_password_hash(password)):
       return True
-    return False
+    else:
+      return False
 
     
 class Pokemon(db.Model):
@@ -62,7 +66,7 @@ class Pokemon(db.Model):
   type1 = db.Column(db.String(50), nullable = False)
   type2 = db.Column(db.String(50), nullable = False, default = "None")
   weight = db.Column(db.Integer, nullable = True)
-  users = db.relationship('UserPokemon', backref='user', lazy=True, cascade='all, delete-orphan')
+  # users = db.relationship('UserPokemon', backref='user', lazy=True, cascade='all, delete-orphan')
   pass
 
   def get_json(self):

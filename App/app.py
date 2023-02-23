@@ -39,8 +39,12 @@ def listPokemon():
 
 @app.route('/signup', methods=['POST'])
 def signUpUser():
-  data = request.json
-  new_user = User(data['username'], data['email'], data['password'])
+  data = request.get_json()
+  username = data.get('username')
+  password = data.get('password')
+  email = data.get('email')
+  new_user = User(username, email, password)
+  # new_user = User(data['username'], data['email'], data['password'])
 
   user_username = User.query.filter_by(username=data['username']).first()
   user_email = User.query.filter_by(email=data['email']).first()
@@ -61,20 +65,23 @@ def login(username, password):
 
 @app.route('/login', methods=['POST'])
 def loginUser():
-  data = request.json
-  token = login(data['username'], data['password'])
+  data = request.get_json()
+  username = data.get('username')
+  password = data.get('password')
+  token = login(username, password)
+  # token = login(data['username'], data['password'])
   if not token:
       return jsonify(error='bad username/password given'), 401
-  return jsonify(access_token=token)
+  return jsonify(access_token=token), 200
 
 @app.route('/mypokemon', methods=['POST'])
-@jwt_required()
+@jwt_required(fresh=True)
 def saveMyPokemon():
-  data = request.json
+  data = request.get_json()
   user = User.query.filter_by(username=get_jwt_identity()).first()
   
   if user and pokemon:
-    new_userPokemon = UserPokemon(user.user_id, data['pokemon_id'], data['name'])
+    new_userPokemon = UserPokemon(user.user_id, data.get('pokemon_id'), data['name'])
     return jsonify(message=f'{new_userPokemon.name} captured with id: {new_userPokemon.pokemon_id}'), 201
   else:
     return jsonify(error=f'{new_userPokemon.pokemon_id} is not a valid pokemon id'), 400
@@ -84,10 +91,13 @@ def saveMyPokemon():
 def listMyPokemons():
   # get the user object of the authenticated user
   user = User.query.filter_by(username=get_jwt_identity()).first()
-  pokemons = UserPokemon.query.filter_by(user_id=user.user_id)
+  # pokemons = UserPokemon.query.filter_by(user_id=user.user_id).all()
+  pokemons = UserPokemon.query.filter_by(user_id=get_jwt_identity()).all()
+  p_json = []
   if pokemons:
-  # converts todo objects to list of todo dictionaries
-    p_json = [ UserPokemon.get_json() for p in pokemons ]
+    for p in pokemons:
+      p_json.append(p.get_json())
+    # p_json = [ UserPokemon.get_json() for p in pokemons ]
     return jsonify(p_json), 200
   else:
     return jsonify(error=f'User has not captured any pokemons'), 401
@@ -106,23 +116,39 @@ def getMyPokemon():
 @app.route('/mypokemon/<int:id>', methods=['PUT'])
 @jwt_required()
 def updateMyPokemon():
-  data = request.json
-  user = UserPokemon.query.filter_by(username=get_jwt_identity()).first()
-
-  todo = Todo.query.get(id)
-
+  data = request.get_json()
+  user = User.query.filter_by(username=get_jwt_identity()).first()
+  user_pokemon = UserPokemon.query.filter_by(pokemon_id=pokemon_id, user_id=user.user_id).first()
+  if user and user_pokemon:
+    if user_pokemon.user_id == user.user_id:
+      user_pokemon.name = data.get('name')
+      db.session.add(user_pokemon)
+      db.session.commit()
+    return jsonify(message=f'{user_pokemon.name}'), 200
+  else:
+    return jsonify(error=f'id {id} invalid or does not belong to {user.username}'), 401
   # must check if todo belongs to the authenticated user
-  if not todo or todo.user.username != get_jwt_identity():
-    return jsonify(error="Bad ID or unauthorized"), 401
+  # if not todo or todo.user.username != get_jwt_identity():
+  #   return jsonify(error="Bad ID or unauthorized"), 401
 
-  user.update_todo(id, data['text'])
-  return jsonify(message=f"todo updated to '{data['text']}'!"), 200
+  # user.update_todo(id, data['text'])
+  # return jsonify(message=f"todo updated to '{data['text']}'!"), 200
 
 @app.route('/mypokemon/<int:id>', methods=['DELETE'])
 @jwt_required()
 def deleteMyPokemon():
-  user_pokemon = UserPokemon.query.filter_by(username=get_jwt_identity(), pokemon_id=id).first()
-
+  data = request.get_json()
+  name = data['name']
+  user = User.query.filter_by(username=get_jwt_identity()).first()
+  user_pokemon = UserPokemon.query.filter_by(pokemon_id=pokemon_id, user_id=user.user_id).first()
+  if user and user_pokemon:
+    if user_pokemon.user_id == user.user_id:
+      user_pokemon.name = name
+      db.session.delete(user_pokemon)
+      db.session.commit()
+    return jsonify(message=f'{name} released'), 200
+  else:
+    return jsonify(error=f'id {id} invalid or does not belong to {user.username}'), 401
   # if user_pokemon:
   #   # must check if todo belongs to the authenticated user
   # if not todo or todo.user.username != get_jwt_identity():
