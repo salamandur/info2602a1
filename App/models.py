@@ -9,6 +9,11 @@ class UserPokemon(db.Model):
   name = db.Column(db.String(50), nullable = False)
   pass
 
+  def __init__(self, user_id, pokemon_id, name):
+    self.user_id = user_id
+    self.pokemon_id = pokemon_id
+    self.name = name
+
   def get_json(self):
     return {"id": self.id, "pokemon_id": self.pokemon_id, "name": self.name}
 
@@ -27,7 +32,7 @@ class User(db.Model):
     self.set_password(password)
 
   def catch_pokemon(pokemon_id, name):
-    return
+    pokemon = Pokemon.query.filter_by(pokemon_id=data['pokemon_id']).first()
 
   def release_pokemon(pokemon_id, name):
     return
@@ -39,7 +44,7 @@ class User(db.Model):
     self.password = generate_password_hash(password)
 
   def check_password(self, password):
-    if(generate_password_hash(self.password)==generate_password_hash(password)):
+    if(self.password==generate_password_hash(password)):
       return True
     return False
 

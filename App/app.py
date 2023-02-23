@@ -62,13 +62,28 @@ def login(username, password):
 @app.route('/login', methods=['POST'])
 def loginUser():
   data = request.json
+  # token = login("Alison.Jerde", "password")
   token = login(data['username'], data['password'])
   if not token:
       return jsonify(error='bad username/password given'), 401
   return jsonify(access_token=token)
 
 @app.route('/mypokemon', methods=['POST'])
+@jwt_required()
 def saveUserPokemon():
   data = request.json
+  username = get_jwt_identity()
+  user = User.query.filter_by(username=username).first()
+  
+  if user and pokemon:
+    new_userPokemon = UserPokemon(user.user_id, data['pokemon_id'], data['name'])
+    return jsonify(message=f'{new_userPokemon.name} captured with id: {new_userPokemon.pokemon_id}'), 201
+  else:
+    return jsonify(error=f'{new_userPokemon.pokemon_id} is not a valid pokemon id'), 400
+
+@app.route('/mypokemon', methods=['GET'])
+def listMyPokemons():
+  return 'e'
+
 if __name__ == "__main__":
   app.run(host='0.0.0.0', port=81)
