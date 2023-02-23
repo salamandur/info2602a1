@@ -70,10 +70,9 @@ def loginUser():
 
 @app.route('/mypokemon', methods=['POST'])
 @jwt_required()
-def saveUserPokemon():
+def saveMyPokemon():
   data = request.json
-  username = get_jwt_identity()
-  user = User.query.filter_by(username=username).first()
+  user = User.query.filter_by(username=get_jwt_identity()).first()
   
   if user and pokemon:
     new_userPokemon = UserPokemon(user.user_id, data['pokemon_id'], data['name'])
@@ -83,7 +82,50 @@ def saveUserPokemon():
 
 @app.route('/mypokemon', methods=['GET'])
 def listMyPokemons():
-  return 'e'
+  # get the user object of the authenticated user
+  user = User.query.filter_by(username=get_jwt_identity()).first()
+  # converts todo objects to list of todo dictionaries
+  p_json = [ Pokemon.get_json() for p in user.todos ]
+  return jsonify(p_json), 200
+
+@app.route('/mypokemon/<int:id>', methods=['GET'])
+@jwt_required()
+def getMyPokemon():
+  todo = Todo.query.get(id)
+
+  # must check if todo belongs to the authenticated user
+  if not todo or todo.user.username != get_jwt_identity():
+    return jsonify(error="Bad ID or unauthorized"), 401
+  
+  return jsonify(todo.get_json()), 200
+
+@app.route('/mypokemon/<int:id>', methods=['PUT'])
+@jwt_required()
+def updateMyPokemon():
+  data = request.json
+  user = RegularUser.query.filter_by(username=get_jwt_identity()).first()
+
+  todo = Todo.query.get(id)
+
+  # must check if todo belongs to the authenticated user
+  if not todo or todo.user.username != get_jwt_identity():
+    return jsonify(error="Bad ID or unauthorized"), 401
+
+  user.update_todo(id, data['text'])
+  return jsonify(message=f"todo updated to '{data['text']}'!"), 200
+
+@app.route('/mypokemon/<int:id>', methods=['DELETE'])
+@jwt_required()
+def deleteMyPokemon():
+  user = RegularUser.query.filter_by(username=get_jwt_identity()).first()
+  todo = Todo.query.get(id)
+
+  # must check if todo belongs to the authenticated user
+  if not todo or todo.user.username != get_jwt_identity():
+    return jsonify(error="Bad ID or unauthorized"), 401
+
+  user.delete_todo(id)
+  return jsonify(message="todo deleted!"), 200
 
 if __name__ == "__main__":
   app.run(host='0.0.0.0', port=81)
