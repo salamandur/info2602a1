@@ -62,7 +62,6 @@ def login(username, password):
 @app.route('/login', methods=['POST'])
 def loginUser():
   data = request.json
-  # token = login("Alison.Jerde", "password")
   token = login(data['username'], data['password'])
   if not token:
       return jsonify(error='bad username/password given'), 401
@@ -81,29 +80,34 @@ def saveMyPokemon():
     return jsonify(error=f'{new_userPokemon.pokemon_id} is not a valid pokemon id'), 400
 
 @app.route('/mypokemon', methods=['GET'])
+@jwt_required()
 def listMyPokemons():
   # get the user object of the authenticated user
   user = User.query.filter_by(username=get_jwt_identity()).first()
+  pokemons = UserPokemon.query.filter_by(user_id=user.user_id)
+  if pokemons:
   # converts todo objects to list of todo dictionaries
-  p_json = [ Pokemon.get_json() for p in user.todos ]
-  return jsonify(p_json), 200
+    p_json = [ UserPokemon.get_json() for p in pokemons ]
+    return jsonify(p_json), 200
+  else:
+    return jsonify(error=f'User has not captured any pokemons'), 401
 
 @app.route('/mypokemon/<int:id>', methods=['GET'])
 @jwt_required()
 def getMyPokemon():
-  todo = Todo.query.get(id)
-
+  user_pokemon = UserPokemon.query.filter_by(username=get_jwt_identity(), pokemon_id=id).first()
+  if user_pokemon:
+    return jsonify(user_pokemon.get_json()), 200
+  return jsonify(error=f"id {id} invalid or does not belong to {get_jwt_identity()}"), 401
   # must check if todo belongs to the authenticated user
-  if not todo or todo.user.username != get_jwt_identity():
-    return jsonify(error="Bad ID or unauthorized"), 401
-  
-  return jsonify(todo.get_json()), 200
+  # if not todo or todo.user.username != get_jwt_identity():
+  # return jsonify(todo.get_json()), 200
 
 @app.route('/mypokemon/<int:id>', methods=['PUT'])
 @jwt_required()
 def updateMyPokemon():
   data = request.json
-  user = RegularUser.query.filter_by(username=get_jwt_identity()).first()
+  user = UserPokemon.query.filter_by(username=get_jwt_identity()).first()
 
   todo = Todo.query.get(id)
 
@@ -117,15 +121,15 @@ def updateMyPokemon():
 @app.route('/mypokemon/<int:id>', methods=['DELETE'])
 @jwt_required()
 def deleteMyPokemon():
-  user = RegularUser.query.filter_by(username=get_jwt_identity()).first()
-  todo = Todo.query.get(id)
+  user_pokemon = UserPokemon.query.filter_by(username=get_jwt_identity(), pokemon_id=id).first()
 
-  # must check if todo belongs to the authenticated user
-  if not todo or todo.user.username != get_jwt_identity():
-    return jsonify(error="Bad ID or unauthorized"), 401
+  # if user_pokemon:
+  #   # must check if todo belongs to the authenticated user
+  # if not todo or todo.user.username != get_jwt_identity():
+  #   return jsonify(error="Bad ID or unauthorized"), 401
 
-  user.delete_todo(id)
-  return jsonify(message="todo deleted!"), 200
+  # user.delete_todo(id)
+  # return jsonify(message="todo deleted!"), 200
 
 if __name__ == "__main__":
   app.run(host='0.0.0.0', port=81)
