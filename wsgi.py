@@ -30,5 +30,3 @@ def initialize():
       db.session.add(new_pokemon)
     db.session.commit()
   print('database initialized')
-
-  
