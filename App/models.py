@@ -4,8 +4,8 @@ db = SQLAlchemy()
 
 class UserPokemon(db.Model):
   id = db.Column(db.Integer, primary_key=True)
-  user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), unique = True, nullable = False)
-  pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.pokemon_id'), unique = True, nullable = False)
+  user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable = False)
+  pokemon_id = db.Column(db.Integer, db.ForeignKey('pokemon.pokemon_id'), nullable = False)
   name = db.Column(db.String(50), nullable = False)
   pass
 
@@ -15,15 +15,18 @@ class UserPokemon(db.Model):
     self.name = name
 
   def get_json(self):
-    return {"id": self.id, "pokemon_id": self.pokemon_id, "name": self.name}
-
+    pokemon = Pokemon.query.filter_by(pokemon_id=self.pokemon_id).first()
+    if pokemon:
+      return {"id": self.pokemon_id, "name": self.name, "species": pokemon.name}
+    else:
+      return {"id": self.pokemon_id, "name": self.name, "species": null}
 
 class User(db.Model):
   user_id = db.Column(db.Integer, primary_key=True)
   username = db.Column(db.String(80), unique = True, nullable = False)
   email = db.Column(db.String(120), unique = True, nullable = False)
   password = db.Column(db.String(120), unique = True, nullable = False)
-  # pokemons = db.relationship('UserPokemon', backref='pokemon', lazy=True, cascade='all, delete-orphan')
+  pokemons = db.relationship('UserPokemon', backref='pokemon', lazy=True, cascade='all, delete-orphan')
   pass
 
   def __init__(self, username, email, password):
@@ -44,13 +47,10 @@ class User(db.Model):
     
 
   def set_password(self, password):
-    self.password = generate_password_hash(password)
+    self.password = generate_password_hash(password, method='sha256')
 
   def check_password(self, password):
-    if(self.password==generate_password_hash(password)):
-      return True
-    else:
-      return False
+    return check_password_hash(self.password, password)
 
     
 class Pokemon(db.Model):

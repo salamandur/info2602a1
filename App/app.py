@@ -75,37 +75,42 @@ def loginUser():
   return jsonify(access_token=token), 200
 
 @app.route('/mypokemon', methods=['POST'])
-@jwt_required(fresh=True)
+@jwt_required()
 def saveMyPokemon():
   data = request.get_json()
+  pokemon_id = data.get('pokemon_id')
   user = User.query.filter_by(username=get_jwt_identity()).first()
-  
+  pokemon = Pokemon.query.filter_by(pokemon_id=data['pokemon_id']).first()
   if user and pokemon:
-    new_userPokemon = UserPokemon(user.user_id, data.get('pokemon_id'), data['name'])
+    new_userPokemon = UserPokemon(user.user_id, pokemon_id, data['name'])
+    db.session.add(new_userPokemon)
+    db.session.commit()
     return jsonify(message=f'{new_userPokemon.name} captured with id: {new_userPokemon.pokemon_id}'), 201
   else:
-    return jsonify(error=f'{new_userPokemon.pokemon_id} is not a valid pokemon id'), 400
+    return jsonify(error=f'{pokemon_id} is not a valid pokemon id'), 400
 
 @app.route('/mypokemon', methods=['GET'])
 @jwt_required()
 def listMyPokemons():
   # get the user object of the authenticated user
   user = User.query.filter_by(username=get_jwt_identity()).first()
-  # pokemons = UserPokemon.query.filter_by(user_id=user.user_id).all()
-  pokemons = UserPokemon.query.filter_by(user_id=get_jwt_identity()).all()
-  p_json = []
+  pokemons = UserPokemon.query.filter_by(user_id=user.user_id)
+  # pokemons = UserPokemon.query.filter_by(user_id=get_jwt_identity())
+  # p_json = []
   if pokemons:
-    for p in pokemons:
-      p_json.append(p.get_json())
-    # p_json = [ UserPokemon.get_json() for p in pokemons ]
+  #   for p in pokemons:
+  #     p_json.append(p.get_json())
+    p_json = [ p.get_json() for p in pokemons ]
+    print(p_json)
     return jsonify(p_json), 200
   else:
     return jsonify(error=f'User has not captured any pokemons'), 401
 
 @app.route('/mypokemon/<int:id>', methods=['GET'])
 @jwt_required()
-def getMyPokemon():
-  user_pokemon = UserPokemon.query.filter_by(username=get_jwt_identity(), pokemon_id=id).first()
+def getMyPokemon(id):
+  user = User.query.filter_by(username=get_jwt_identity()).first()
+  user_pokemon = UserPokemon.query.filter_by(user_id=user.user_id, pokemon_id=id).first()
   if user_pokemon:
     return jsonify(user_pokemon.get_json()), 200
   return jsonify(error=f"id {id} invalid or does not belong to {get_jwt_identity()}"), 401
@@ -115,15 +120,14 @@ def getMyPokemon():
 
 @app.route('/mypokemon/<int:id>', methods=['PUT'])
 @jwt_required()
-def updateMyPokemon():
+def updateMyPokemon(id):
   data = request.get_json()
   user = User.query.filter_by(username=get_jwt_identity()).first()
-  user_pokemon = UserPokemon.query.filter_by(pokemon_id=pokemon_id, user_id=user.user_id).first()
-  if user and user_pokemon:
-    if user_pokemon.user_id == user.user_id:
-      user_pokemon.name = data.get('name')
-      db.session.add(user_pokemon)
-      db.session.commit()
+  user_pokemon = UserPokemon.query.filter_by(pokemon_id=id, user_id=user.user_id).first()
+  if user_pokemon:
+    user_pokemon.name = data.get('name')
+    db.session.add(user_pokemon)
+    db.session.commit()
     return jsonify(message=f'{user_pokemon.name}'), 200
   else:
     return jsonify(error=f'id {id} invalid or does not belong to {user.username}'), 401
@@ -136,16 +140,13 @@ def updateMyPokemon():
 
 @app.route('/mypokemon/<int:id>', methods=['DELETE'])
 @jwt_required()
-def deleteMyPokemon():
-  data = request.get_json()
-  name = data['name']
+def deleteMyPokemon(id):
   user = User.query.filter_by(username=get_jwt_identity()).first()
-  user_pokemon = UserPokemon.query.filter_by(pokemon_id=pokemon_id, user_id=user.user_id).first()
-  if user and user_pokemon:
-    if user_pokemon.user_id == user.user_id:
-      user_pokemon.name = name
-      db.session.delete(user_pokemon)
-      db.session.commit()
+  user_pokemon = UserPokemon.query.filter_by(pokemon_id=id, user_id=user.user_id).first()
+  if user_pokemon:
+    name = user_pokemon.name
+    db.session.delete(user_pokemon)
+    db.session.commit()
     return jsonify(message=f'{name} released'), 200
   else:
     return jsonify(error=f'id {id} invalid or does not belong to {user.username}'), 401
